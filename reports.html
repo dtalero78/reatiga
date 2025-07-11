@@ -18,6 +18,13 @@
             padding: 20px;
         }
 
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: #f8f9fa;
+            }
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -25,6 +32,16 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                max-width: none;
+                min-height: 100vh;
+            }
         }
 
         .header {
@@ -35,10 +52,25 @@
             position: relative;
         }
 
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 10px;
+                text-align: left;
+            }
+        }
+
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
             font-weight: 300;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+                margin-bottom: 5px;
+                text-align: center;
+            }
         }
 
         .header p {
@@ -46,10 +78,25 @@
             font-size: 1.1em;
         }
 
+        @media (max-width: 768px) {
+            .header p {
+                font-size: 0.9em;
+                text-align: center;
+            }
+        }
+
         .nav-buttons {
             position: absolute;
             top: 30px;
             left: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons {
+                position: static;
+                text-align: center;
+                margin-bottom: 10px;
+            }
         }
 
         .nav-btn {
@@ -62,6 +109,14 @@
             font-weight: 600;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .nav-btn {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
         }
 
         .nav-btn:hover {
@@ -73,11 +128,25 @@
             padding: 40px;
         }
 
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px 10px;
+            }
+        }
+
         .stats-section {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 20px;
+            }
         }
 
         .stat-card {
@@ -89,15 +158,37 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .stat-card {
+                padding: 15px 10px;
+                border-radius: 10px;
+            }
+        }
+
         .stat-card h3 {
             font-size: 2.5em;
             margin-bottom: 10px;
             font-weight: 300;
         }
 
+        @media (max-width: 768px) {
+            .stat-card h3 {
+                font-size: 1.3em;
+                margin-bottom: 5px;
+                font-weight: 600;
+            }
+        }
+
         .stat-card p {
             opacity: 0.9;
             font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .stat-card p {
+                font-size: 0.75em;
+                opacity: 0.8;
+            }
         }
 
         .controls {
@@ -111,6 +202,16 @@
             align-items: center;
         }
 
+        @media (max-width: 768px) {
+            .controls {
+                padding: 15px 10px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+        }
+
         .search-input {
             flex: 1;
             min-width: 200px;
@@ -120,12 +221,29 @@
             font-size: 16px;
         }
 
+        @media (max-width: 768px) {
+            .search-input {
+                min-width: auto;
+                width: 100%;
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+
         .filter-select {
             padding: 12px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 16px;
             background: white;
+        }
+
+        @media (max-width: 768px) {
+            .filter-select {
+                width: 100%;
+                padding: 10px 12px;
+                font-size: 14px;
+            }
         }
 
         .btn {
@@ -138,6 +256,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 14px;
+            }
         }
 
         .btn:hover {
@@ -160,10 +286,24 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
+        @media (max-width: 768px) {
+            .table-container {
+                border-radius: 10px;
+                overflow-x: auto;
+            }
+        }
+
         .table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .table {
+                font-size: 12px;
+                min-width: 800px;
+            }
         }
 
         .table th {
@@ -179,6 +319,13 @@
             user-select: none;
         }
 
+        @media (max-width: 768px) {
+            .table th {
+                padding: 10px 8px;
+                font-size: 11px;
+            }
+        }
+
         .table th:hover {
             background: linear-gradient(135deg, #3b9cfc 0%, #00d9fb 100%);
         }
@@ -187,6 +334,12 @@
             padding: 12px;
             border-bottom: 1px solid #e0e0e0;
             vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .table td {
+                padding: 8px 6px;
+            }
         }
 
         .table tr:hover {
@@ -210,6 +363,13 @@
             text-transform: uppercase;
         }
 
+        @media (max-width: 768px) {
+            .badge {
+                padding: 2px 8px;
+                font-size: 10px;
+            }
+        }
+
         .badge-efectivo { background: #d4edda; color: #155724; }
         .badge-tarjeta { background: #d1ecf1; color: #0c5460; }
         .badge-transferencia { background: #f8d7da; color: #721c24; }
@@ -231,6 +391,13 @@
             font-size: 12px;
         }
 
+        @media (max-width: 768px) {
+            .delete-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+        }
+
         .delete-btn:hover {
             background: #c82333;
         }
@@ -243,38 +410,16 @@
             font-size: 1.2em;
         }
 
+        @media (max-width: 768px) {
+            .no-data {
+                padding: 40px 15px;
+                font-size: 1em;
+            }
+        }
+
         .sort-indicator {
             margin-left: 5px;
             font-size: 12px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .nav-buttons {
-                position: static;
-                text-align: center;
-                margin-bottom: 20px;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .search-input {
-                min-width: auto;
-            }
         }
     </style>
 </head>
