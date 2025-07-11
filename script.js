@@ -352,7 +352,7 @@ window.addEventListener('load', init);
 async function clearAllData() {
     if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
         try {
-            // Intentar eliminar del servidor si es posible
+            // Intentar eliminar del servidor
             const response = await fetch('/api/ventas', { method: 'DELETE' });
             if (response.ok) {
                 salesData = [];

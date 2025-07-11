@@ -207,6 +207,28 @@ app.delete('/api/ventas/:id', (req, res) => {
     });
 });
 
+// Eliminar todas las ventas
+app.delete('/api/ventas', (req, res) => {
+    const sql = 'DELETE FROM ventas';
+    
+    db.run(sql, [], function(err) {
+        if (err) {
+            console.error('Error al eliminar todas las ventas:', err.message);
+            res.status(500).json({ error: 'Error al eliminar todas las ventas' });
+            return;
+        }
+        
+        // Reiniciar el autoincrement
+        db.run('DELETE FROM sqlite_sequence WHERE name="ventas"', (err) => {
+            if (err) {
+                console.error('Error al reiniciar autoincrement:', err.message);
+            }
+        });
+        
+        res.json({ mensaje: `${this.changes} ventas eliminadas correctamente` });
+    });
+});
+
 // Obtener estadísticas generales
 app.get('/api/estadisticas', (req, res) => {
     const sql = `
