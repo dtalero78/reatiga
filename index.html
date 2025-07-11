@@ -24,44 +24,65 @@
                     <div class="datetime-display" id="currentDateTime"></div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="paymentMethod">Medio de Pago <span class="required">*</span></label>
-                        <select id="paymentMethod" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="efectivo">Efectivo</option>
-                            <option value="tarjeta">Tarjeta</option>
-                            <option value="transferencia">Transferencia</option>
-                            <option value="nequi">Nequi</option>
-                            <option value="daviplata">Daviplata</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Medio de Pago <span class="required">*</span></label>
+                    <select id="paymentMethod" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="daviplata">Daviplata</option>
+                    </select>
+                </div>
 
-                    <div class="form-group">
-                        <label for="item">Item <span class="required">*</span></label>
-                        <select id="item" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="Libro MC">Libro MC</option>
-                            <option value="Libro DV">Libro DV</option>
-                            <option value="Siembra Árbol">Siembra Árbol</option>
-                            <option value="Juguete">Juguete</option>
-                            <option value="Joya">Joya</option>
-                            <option value="Combo libros">Combo libros</option>
-                            <option value="Kimono">Kimono</option>
-                            <option value="Kit manualidad">Kit manualidad</option>
-                        </select>
+                <!-- Sección de Items -->
+                <div class="items-section">
+                    <h3>🛍️ Items de la Venta</h3>
+                    <div id="itemsContainer">
+                        <!-- Los items se agregarán dinámicamente aquí -->
+                    </div>
+                    
+                    <div class="add-item-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newItem">Agregar Item</label>
+                                <select id="newItem">
+                                    <option value="">Seleccionar item...</option>
+                                    <option value="Libro MC">Libro MC</option>
+                                    <option value="Libro DV">Libro DV</option>
+                                    <option value="Siembra Árbol">Siembra Árbol</option>
+                                    <option value="Juguete">Juguete</option>
+                                    <option value="Joya">Joya</option>
+                                    <option value="Combo libros">Combo libros</option>
+                                    <option value="Kimono">Kimono</option>
+                                    <option value="Kit manualidad">Kit manualidad</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newQuantity">Cantidad</label>
+                                <input type="number" id="newQuantity" min="1" placeholder="1">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPrice">Precio Unitario</label>
+                                <input type="number" id="newPrice" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" class="btn btn-add" onclick="addItem()">➕ Agregar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="quantity">Cantidad <span class="required">*</span></label>
-                        <input type="number" id="quantity" min="1" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="amount">Valor Pagado <span class="required">*</span></label>
-                        <input type="number" id="amount" min="0" step="0.01" required>
+                <!-- Total de la venta -->
+                <div class="total-section">
+                    <div class="total-display">
+                        <h3>Total de la Venta: $<span id="totalAmount">0</span></h3>
+                        <p><span id="totalItems">0</span> items</p>
                     </div>
                 </div>
 

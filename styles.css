@@ -146,6 +146,108 @@ input:focus, select:focus, textarea:focus {
     color: #495057;
 }
 
+/* Sección de items */
+.items-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    border: 2px solid #e9ecef;
+}
+
+.items-section h3 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.add-item-form {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.btn-add {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.item-row {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-info h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.item-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.item-price {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 1.1em;
+    margin-right: 15px;
+}
+
+.remove-item {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-item:hover {
+    background: #c82333;
+}
+
+.total-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.total-display h3 {
+    margin: 0 0 10px 0;
+    font-size: 2em;
+}
+
+.total-display p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.empty-items {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+}
+
 /* Contenedor para los botones de acción */
 .action-buttons {
     display: flex;
@@ -199,5 +301,15 @@ input:focus, select:focus, textarea:focus {
         width: 100%;
         margin-right: 0;
         margin-bottom: 10px;
+    }
+    
+    .item-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .item-price {
+        margin-right: 0;
     }
 }
