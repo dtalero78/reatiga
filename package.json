@@ -2,12 +2,18 @@
   "name": "sales-registration-app",
   "version": "1.0.0",
   "description": "Aplicación para registro de ventas presenciales",
+  "main": "server.js",
   "scripts": {
-    "build": "echo 'Static site ready'",
-    "start": "echo 'This is a static site - no server needed'"
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
   },
   "author": "dtalero78",
   "license": "MIT",
-  "keywords": ["sales", "registration", "static-site"],
-  "homepage": "."
+  "keywords": ["sales", "registration", "express"],
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
