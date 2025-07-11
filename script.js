@@ -21,19 +21,31 @@ async function saveSale(saleData) {
     try {
         const response = await fetch('/api/ventas', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(saleData)
         });
-        if (!response.ok) throw new Error('Error al guardar la venta');
+        
+        if (!response.ok) {
+            throw new Error('Error al guardar la venta');
+        }
+        
         const savedSale = await response.json();
         return savedSale;
     } catch (error) {
         console.error('Error al guardar venta:', error);
+        
         // Fallback a localStorage
-        const fallbackSale = { ...saleData, id: Date.now() };
+        const fallbackSale = {
+            ...saleData,
+            id: Date.now() // ID temporal
+        };
+        
         let localSales = JSON.parse(localStorage.getItem('salesData')) || [];
         localSales.unshift(fallbackSale);
         localStorage.setItem('salesData', JSON.stringify(localSales));
+        
         throw error;
     }
 }
@@ -41,323 +53,431 @@ async function saveSale(saleData) {
 // Actualizar fecha y hora cada segundo
 function updateDateTime() {
     const now = new Date();
-    const dt = now.toLocaleDateString('es-CO') + ' ' + now.toLocaleTimeString('es-CO');
-    const el = document.getElementById('currentDateTime');
-    if (el) el.textContent = dt;
+    const dateTimeString = now.toLocaleDateString('es-CO') + ' ' + now.toLocaleTimeString('es-CO');
+    document.getElementById('currentDateTime').textContent = dateTimeString;
 }
 
-// Inicializar la aplicación (index.html)
+// Inicializar la aplicación
 async function init() {
     updateDateTime();
     setInterval(updateDateTime, 1000);
+    
+    // Cargar ventas desde el servidor
     await fetchSales();
+    
     displaySalesHistory();
     displayCurrentItems();
     updateTotal();
     setupEventListeners();
 }
 
-// Configurar event listeners de index.html
+// Configurar event listeners
 function setupEventListeners() {
-    const addBtn = document.getElementById('addItemBtn');
-    if (addBtn) addBtn.addEventListener('click', addItem);
-    ['newItem','newQuantity','newPrice'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('keypress', e => { if (e.key==='Enter') addItem(); });
+    // Botón de agregar item
+    document.getElementById('addItemBtn').addEventListener('click', addItem);
+    // Event listener para Enter en los campos
+    ['newItem', 'newQuantity', 'newPrice'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addItem();
+        });
     });
 }
 
-// Agregar item a la venta (index.html)
+// Agregar item a la venta
 function addItem() {
     const itemSelect = document.getElementById('newItem');
-    const qtyInput   = document.getElementById('newQuantity');
+    const quantityInput = document.getElementById('newQuantity');
     const priceInput = document.getElementById('newPrice');
-    if (!itemSelect || !qtyInput || !priceInput) return;
 
-    const item     = itemSelect.value;
-    const quantity = parseInt(qtyInput.value) || 1;
-    const price    = parseFloat(priceInput.value) || 0;
+    const item = itemSelect.value;
+    const quantity = parseInt(quantityInput.value) || 1;
+    const price = parseFloat(priceInput.value) || 0;
 
-    if (!item)  return alert('Por favor selecciona un item');
-    if (price<=0) return alert('Por favor ingresa un precio válido');
-
-    const idx = currentItems.findIndex(i=>i.item===item);
-    if (idx>=0) {
-        currentItems[idx].quantity += quantity;
-        currentItems[idx].price = price;
-        currentItems[idx].subtotal = currentItems[idx].quantity * price;
-    } else {
-        currentItems.push({ item, quantity, price, subtotal: quantity*price });
+    if (!item) {
+        alert('Por favor selecciona un item');
+        return;
     }
 
+    if (price <= 0) {
+        alert('Por favor ingresa un precio válido');
+        return;
+    }
+
+    // Verificar si el item ya existe
+    const existingItemIndex = currentItems.findIndex(i => i.item === item);
+
+    if (existingItemIndex >= 0) {
+        currentItems[existingItemIndex].quantity += quantity;
+        currentItems[existingItemIndex].price = price;
+        currentItems[existingItemIndex].subtotal = currentItems[existingItemIndex].quantity * price;
+    } else {
+        currentItems.push({
+            item: item,
+            quantity: quantity,
+            price: price,
+            subtotal: quantity * price
+        });
+    }
+
+    // Limpiar formulario de agregar item
     itemSelect.value = '';
-    qtyInput.value   = '';
+    quantityInput.value = '';
     priceInput.value = '';
+
     displayCurrentItems();
     updateTotal();
 }
 
-// Mostrar items actuales (index.html)
+// Mostrar items actuales
 function displayCurrentItems() {
     const container = document.getElementById('itemsContainer');
-    if (!container) return;
-    if (currentItems.length===0) {
+    if (currentItems.length === 0) {
         container.innerHTML = '<div class="empty-items">No hay items agregados aún</div>';
         return;
     }
-    container.innerHTML = currentItems.map((it,i)=>`
+
+    container.innerHTML = currentItems.map((item, index) => `
         <div class="item-row">
             <div class="item-info">
-                <h4>${it.item}</h4>
-                <p>Cantidad: ${it.quantity} | Precio unitario: $${it.price.toLocaleString('es-CO')}</p>
+                <h4>${item.item}</h4>
+                <p>Cantidad: ${item.quantity} | Precio unitario: $${item.price.toLocaleString('es-CO')}</p>
             </div>
-            <div class="item-price">$${it.subtotal.toLocaleString('es-CO')}</div>
-            <button class="remove-item" onclick="removeItem(${i})">🗑️</button>
+            <div class="item-price">$${item.subtotal.toLocaleString('es-CO')}</div>
+            <button class="remove-item" onclick="removeItem(${index})">🗑️</button>
         </div>
     `).join('');
 }
 
+// Eliminar item de la venta
 function removeItem(index) {
-    currentItems.splice(index,1);
+    currentItems.splice(index, 1);
     displayCurrentItems();
     updateTotal();
 }
 
-// Actualizar total y contador de items (index.html)
+// Actualizar total
 function updateTotal() {
-    const total = currentItems.reduce((s,it)=> s+it.subtotal, 0);
-    const count = currentItems.reduce((s,it)=> s+it.quantity, 0);
-    const amtEl = document.getElementById('totalAmount');
-    const cntEl = document.getElementById('totalItems');
-    if (amtEl) amtEl.textContent = total.toLocaleString('es-CO');
-    if (cntEl) cntEl.textContent = count;
+    const total = currentItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const totalItems = currentItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    document.getElementById('totalAmount').textContent = total.toLocaleString('es-CO');
+    document.getElementById('totalItems').textContent = totalItems;
 }
 
-// Manejar envío de formulario (index.html)
-const salesForm = document.getElementById('salesForm');
-if (salesForm) {
-    salesForm.addEventListener('submit', async function(e){
-        e.preventDefault();
-        if (currentItems.length===0) return alert('Por favor agrega al menos un item');
-        const method = document.getElementById('paymentMethod').value;
-        if (!method) return alert('Por favor selecciona un medio de pago');
+// Manejar el envío del formulario
+document.getElementById('salesForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-        const formData = {
-            fecha: new Date().toLocaleDateString('es-CO'),
-            hora:  new Date().toLocaleTimeString('es-CO'),
-            medioPago: method,
-            items: [...currentItems],
-            totalItems: currentItems.reduce((s,it)=>s+it.quantity,0),
-            valorTotal: currentItems.reduce((s,it)=>s+it.subtotal,0),
-            nombreCliente: document.getElementById('customerName').value || 'No especificado',
-            cedula:        document.getElementById('customerID').value   || 'No especificado',
-            telefono:      document.getElementById('customerPhone').value|| 'No especificado'
-        };
+    if (currentItems.length === 0) {
+        alert('Por favor agrega al menos un item a la venta');
+        return;
+    }
+    if (!document.getElementById('paymentMethod').value) {
+        alert('Por favor selecciona un medio de pago');
+        return;
+    }
 
-        const btn = this.querySelector('button[type="submit"]');
-        const orig = btn.textContent;
-        btn.textContent = '💾 Guardando...';
-        btn.disabled = true;
+    const formData = {
+        fecha: new Date().toLocaleDateString('es-CO'),
+        hora: new Date().toLocaleTimeString('es-CO'),
+        medioPago: document.getElementById('paymentMethod').value,
+        items: [...currentItems],
+        totalItems: currentItems.reduce((sum, item) => sum + item.quantity, 0),
+        valorTotal: currentItems.reduce((sum, item) => sum + item.subtotal, 0),
+        nombreCliente: document.getElementById('customerName').value || 'No especificado',
+        cedula: document.getElementById('customerID').value || 'No especificado',
+        telefono: document.getElementById('customerPhone').value || 'No especificado'
+    };
 
-        try {
-            const saved = await saveSale(formData);
-            salesData.unshift(saved);
-            clearForm();
-            displaySalesHistory();
-        } catch {
-            alert('Error al guardar, se guardó localmente.');
-            clearForm();
-            displaySalesHistory();
-        } finally {
-            btn.textContent = orig;
-            btn.disabled = false;
-        }
-    });
-}
+    try {
+        // Mostrar loading
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '💾 Guardando...';
+        submitBtn.disabled = true;
 
-// Limpiar formulario (index.html)
+        const savedSale = await saveSale(formData);
+        
+        // Actualizar la lista local
+        salesData.unshift(savedSale);
+
+        const successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 3000);
+
+        clearForm();
+        displaySalesHistory();
+
+        // Restaurar botón
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+
+    } catch (error) {
+        alert('Error al guardar la venta. Se guardó localmente como respaldo.');
+        
+        // Restaurar botón
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.textContent = '💾 Registrar Venta';
+        submitBtn.disabled = false;
+        
+        // Mostrar mensaje de éxito local
+        const successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        successMessage.textContent = '⚠️ Venta guardada localmente (sin conexión)';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+            successMessage.textContent = '✅ Venta registrada exitosamente';
+        }, 3000);
+
+        clearForm();
+        displaySalesHistory();
+    }
+});
+
+// Limpiar formulario
 function clearForm() {
-    if (!salesForm) return;
-    salesForm.reset();
+    document.getElementById('salesForm').reset();
     currentItems = [];
     displayCurrentItems();
     updateTotal();
-    document.getElementById('paymentMethod')?.focus();
+    document.getElementById('paymentMethod').focus();
+    document.getElementById('newItem').value = '';
+    document.getElementById('newQuantity').value = '1';
+    document.getElementById('newPrice').value = '';
 }
 
-// Mostrar historial de ventas (index.html)
+// Mostrar historial de ventas
 function displaySalesHistory() {
     const historyContainer = document.getElementById('salesHistory');
-    if (!historyContainer) return;
-    const recent = salesData.slice(0,10);
-    if (recent.length===0) {
-        historyContainer.innerHTML = '<p style="text-align:center;color:#666;font-style:italic;">No hay ventas registradas aún.</p>';
+    const recentSales = salesData.slice(0, 10);
+
+    if (recentSales.length === 0) {
+        historyContainer.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No hay ventas registradas aún.</p>';
         return;
     }
-    historyContainer.innerHTML = recent.map(sale=>`
+
+    const historyHTML = recentSales.map(sale => `
         <div class="sales-item">
             <h3>Venta #${sale.id} - ${sale.totalItems} items</h3>
             <p><strong>Fecha:</strong> ${sale.fecha} a las ${sale.hora}</p>
-            <p><strong>Total:</strong> $${sale.valorTotal.toLocaleString('es-CO')} | <strong>Pago:</strong> ${sale.medioPago}</p>
+            <p><strong>Total:</strong> $${sale.valorTotal.toLocaleString('es-CO')} | <strong>Medio de Pago:</strong> ${sale.medioPago}</p>
             <p><strong>Cliente:</strong> ${sale.nombreCliente}</p>
-            <ul style="margin:5px 0 0 20px;">
-                ${sale.items.map(it=>`<li>${it.item} - Cantidad: ${it.quantity} - $${it.subtotal.toLocaleString('es-CO')}</li>`).join('')}
-            </ul>
-            ${sale.cedula!=='No especificado'?`<p><strong>Cédula:</strong> ${sale.cedula}</p>`:''}
-            ${sale.telefono!=='No especificado'?`<p><strong>Teléfono:</strong> ${sale.telefono}</p>`:''}
+            <div style="margin-top: 10px;">
+                <strong>Items:</strong>
+                <ul style="margin: 5px 0 0 20px;">
+                    ${sale.items.map(item => `
+                        <li>${item.item} - Cantidad: ${item.quantity} - $${item.subtotal.toLocaleString('es-CO')}</li>
+                    `).join('')}
+                </ul>
+            </div>
+            ${sale.cedula !== 'No especificado' ? `<p><strong>Cédula:</strong> ${sale.cedula}</p>` : ''}
+            ${sale.telefono !== 'No especificado' ? `<p><strong>Teléfono:</strong> ${sale.telefono}</p>` : ''}
         </div>
     `).join('');
+
+    historyContainer.innerHTML = historyHTML;
 }
 
-// Exportar datos a JSON
+// Exportar datos
 function exportData() {
-    const dataStr = JSON.stringify(salesData,null,2);
-    const blob = new Blob([dataStr],{type:'application/json'});
-    const url = URL.createObjectURL(blob);
+    const dataStr = JSON.stringify(salesData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `ventas_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = 'ventas_' + new Date().toISOString().split('T')[0] + '.json';
     link.click();
 }
 
-// Alias para HTML
-function exportToCSV() { exportData(); }
-
-// Calcular total del día
+// Calcular total de ventas del día
 function getTodayTotal() {
     const today = new Date().toLocaleDateString('es-CO');
-    return salesData.filter(s=>s.fecha===today).reduce((t,s)=>t+s.valorTotal,0);
+    const todaySales = salesData.filter(sale => sale.fecha === today);
+    return todaySales.reduce((total, sale) => total + sale.valorTotal, 0);
 }
 
 // Estadísticas del día
 function getDayStats() {
-    const todaySales = salesData.filter(s=>s.fecha===new Date().toLocaleDateString('es-CO'));
-    return {
+    const today = new Date().toLocaleDateString('es-CO');
+    const todaySales = salesData.filter(sale => sale.fecha === today);
+
+    const stats = {
         totalVentas: todaySales.length,
-        totalIngresos: todaySales.reduce((t,s)=>t+s.valorTotal,0),
-        promedioVenta: todaySales.length>0
-            ? todaySales.reduce((t,s)=>t+s.valorTotal,0)/todaySales.length
-            : 0,
+        totalIngresos: todaySales.reduce((total, sale) => total + sale.valorTotal, 0),
+        promedioVenta: todaySales.length > 0 ? (todaySales.reduce((total, sale) => total + sale.valorTotal, 0) / todaySales.length) : 0,
         itemMasVendido: getMostSoldItem(todaySales),
         medioPagoMasUsado: getMostUsedPaymentMethod(todaySales)
     };
+
+    return stats;
 }
 
 function getMostSoldItem(sales) {
-    if (!sales.length) return 'N/A';
-    const counts = {};
-    sales.forEach(s=>s.items.forEach(i=>counts[i.item]=(counts[i.item]||0)+i.quantity));
-    return Object.keys(counts).reduce((a,b)=>counts[a]>counts[b]?a:b,'');
+    if (sales.length === 0) return 'N/A';
+
+    const itemCount = {};
+    sales.forEach(sale => {
+        sale.items.forEach(item => {
+            itemCount[item.item] = (itemCount[item.item] || 0) + item.quantity;
+        });
+    });
+
+    if (Object.keys(itemCount).length === 0) return 'N/A';
+
+    return Object.keys(itemCount).reduce((a, b) => itemCount[a] > itemCount[b] ? a : b);
 }
 
 function getMostUsedPaymentMethod(sales) {
-    if (!sales.length) return 'N/A';
-    const counts = {};
-    sales.forEach(s=>counts[s.medioPago]=(counts[s.medioPago]||0)+1);
-    return Object.keys(counts).reduce((a,b)=>counts[a]>counts[b]?a:b,'');
+    if (sales.length === 0) return 'N/A';
+
+    const paymentCount = {};
+    sales.forEach(sale => {
+        paymentCount[sale.medioPago] = (paymentCount[sale.medioPago] || 0) + 1;
+    });
+
+    return Object.keys(paymentCount).reduce((a, b) => paymentCount[a] > paymentCount[b] ? a : b);
 }
 
 function showStats() {
-    console.log('Estadísticas del día:', getDayStats());
+    const stats = getDayStats();
+    console.log('Estadísticas del día:', stats);
 }
 
-// Eliminar todos los datos
+// Inicializar cuando se carga la página
+window.addEventListener('load', init);
+
+// Limpiar todos los datos
 async function clearAllData() {
-    if (!confirm('¿Eliminar todos los datos?')) return;
-    try {
-        await fetch('/api/ventas',{method:'DELETE'});
-        alert('Datos del servidor borrados.');
-    } catch (e) {
-        console.error('Error borrando servidor:',e);
-    }
-    localStorage.removeItem('salesData');
-    salesData = [];
-    currentItems = [];
-    displaySalesHistory();
-    displayCurrentItems();
-    updateTotal();
-    alert('Datos locales borrados.');
-}
-
-// Importar desde JSON
-function importData(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
+    if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
         try {
-            const imported = JSON.parse(e.target.result);
-            if (!Array.isArray(imported)) throw new Error('Formato inválido');
-            salesData = imported;
-            localStorage.setItem('salesData', JSON.stringify(salesData));
-            displaySalesHistory();
-            alert('Importación exitosa.');
-        } catch (err) {
-            alert('Error al importar: '+err.message);
+            // Intentar eliminar del servidor
+            const response = await fetch('/api/ventas', { method: 'DELETE' });
+            if (response.ok) {
+                salesData = [];
+                currentItems = [];
+                displaySalesHistory();
+                displayCurrentItems();
+                updateTotal();
+                alert('Todos los datos han sido eliminados del servidor.');
+            }
+        } catch (error) {
+            console.error('Error al eliminar datos del servidor:', error);
         }
-    };
-    reader.readAsText(file);
+        
+        // Eliminar datos locales también
+        localStorage.removeItem('salesData');
+        localStorage.removeItem('saleCounter');
+        salesData = [];
+        currentItems = [];
+        displaySalesHistory();
+        displayCurrentItems();
+        updateTotal();
+        alert('Datos locales eliminados.');
+    }
 }
 
-// Sincronizar local → servidor
-async function syncLocalDataToServer() {
-    const local = JSON.parse(localStorage.getItem('salesData'))||[];
-    for (let sale of local) {
-        if (!sale.synced) {
+// Importar datos desde archivo JSON
+function importData(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
             try {
+                const importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    salesData = importedData;
+                    localStorage.setItem('salesData', JSON.stringify(salesData));
+                    displaySalesHistory();
+                    alert('Datos importados exitosamente.');
+                } else {
+                    alert('El archivo no tiene el formato correcto.');
+                }
+            } catch (error) {
+                alert('Error al leer el archivo: ' + error.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+}
+
+// Sincronizar datos locales con servidor (función auxiliar)
+async function syncLocalDataToServer() {
+    const localData = JSON.parse(localStorage.getItem('salesData')) || [];
+    
+    for (const sale of localData) {
+        try {
+            if (!sale.synced) {
                 await saveSale(sale);
                 sale.synced = true;
-            } catch {}
+            }
+        } catch (error) {
+            console.error('Error sincronizando venta:', error);
         }
     }
-    localStorage.setItem('salesData', JSON.stringify(local));
+    
+    localStorage.setItem('salesData', JSON.stringify(localData));
 }
+// --- al final de script.js ---
 
-// --- Extensiones para reports.html ---
-
-// Inicializar reports.html
+// Función que rellena estadísticas y tabla de ventas (reports.html)
 async function initReports() {
-    if (!document.getElementById('totalSales')) return;
+  // Solo si existen los elementos de reportes:
+  if (!document.getElementById('totalSales')) return;
+
+  try {
+    // 1) Cargar todas las ventas
     salesData = await fetchSales();
-    const ingresosTotales = salesData.reduce((s,sale)=> s+sale.valorTotal, 0);
-    const promedio = salesData.length ? ingresosTotales/salesData.length : 0;
+
+    // 2) Rellenar tarjetas de estadísticas
+    const ingresosTotales = salesData.reduce((sum, s) => sum + s.valorTotal, 0);
+    const promedio = salesData.length ? ingresosTotales / salesData.length : 0;
     const hoy = new Date().toLocaleDateString('es-CO');
-    const ventasHoy = salesData.filter(s=>s.fecha===hoy).length;
+    const ventasHoy = salesData.filter(s => s.fecha === hoy).length;
+
     document.getElementById('totalSales').textContent   = salesData.length;
-    document.getElementById('totalRevenue').textContent = '$'+ingresosTotales.toLocaleString('es-CO');
-    document.getElementById('averageSale').textContent  = '$'+promedio.toLocaleString('es-CO');
+    document.getElementById('totalRevenue').textContent = '$' + ingresosTotales.toLocaleString('es-CO');
+    document.getElementById('averageSale').textContent  = '$' + promedio.toLocaleString('es-CO');
     document.getElementById('todaySales').textContent   = ventasHoy;
+
+    // 3) Pintar la tabla de detalle
     populateReportsTable(salesData);
+
+  } catch (e) {
+    console.error('Error al cargar reportes:', e);
+  }
 }
 
-// Pinta la tabla de reports.html
+// Genera las filas de la tabla en reports.html
 function populateReportsTable(data) {
-    const tbody = document.getElementById('salesTableBody');
-    if (!tbody) return;
-    if (!data.length) {
-        document.querySelector('.no-data').style.display = 'block';
-        return;
-    }
-    tbody.innerHTML = data.map(sale=>`
-        <tr>
-            <td>${sale.id}</td>
-            <td>${sale.fecha}</td>
-            <td>${sale.nombreCliente}</td>
-            <td>${sale.items.map(i=>`${i.item}(${i.quantity})`).join(', ')}</td>
-            <td class="amount">$${sale.valorTotal.toLocaleString('es-CO')}</td>
-            <td><span class="badge badge-${sale.medioPago}">${sale.medioPago}</span></td>
-            <td><button class="delete-btn" onclick="deleteSale(${sale.id})">Eliminar</button></td>
-        </tr>
-    `).join('');
+  const tbody = document.getElementById('salesTableBody');
+  if (!tbody) return;
+
+  if (data.length === 0) {
+    document.querySelector('.no-data').style.display = 'block';
+    return;
+  }
+
+  tbody.innerHTML = data.map(sale => `
+    <tr>
+      <td>${sale.id}</td>
+      <td>${sale.fecha}</td>
+      <td>${sale.nombreCliente}</td>
+      <td>${sale.items.map(i => `${i.item}(${i.quantity})`).join(', ')}</td>
+      <td class="amount">$${sale.valorTotal.toLocaleString('es-CO')}</td>
+      <td><span class="badge badge-${sale.medioPago}">${sale.medioPago}</span></td>
+      <td><button class="delete-btn" onclick="deleteSale(${sale.id})">Eliminar</button></td>
+    </tr>
+  `).join('');
 }
 
-// Eliminar desde reports.html
+// Permite eliminar una venta y refrescar la vista
 async function deleteSale(id) {
-    if (!confirm('¿Eliminar la venta?')) return;
-    await fetch(`/api/ventas/${id}`, { method: 'DELETE' });
-    initReports();
+  if (!confirm('¿Eliminar la venta?' )) return;
+  await fetch(`/api/ventas/${id}`, { method: 'DELETE' });
+  initReports();
 }
 
-// Arrancadores
-window.addEventListener('load', init);
+// Arranca initReports al cargar el DOM
 document.addEventListener('DOMContentLoaded', initReports);
