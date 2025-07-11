@@ -1,3 +1,10 @@
-git commit
-git add -m "m"
+
+# 2. Agregar todos los archivos modificados
+git add .
+
+# 3. Hacer el commit con un mensaje descriptivo
+git commit -m "Add multiple items support for sales
+
+
+# 4. Push al repositorio remoto
 git push origin main

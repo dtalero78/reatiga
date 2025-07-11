@@ -146,10 +146,16 @@ input:focus, select:focus, textarea:focus {
     color: #495057;
 }
 
+.form-row-mobile {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
 /* Sección de items */
 .items-section {
     background: #f8f9fa;
-    padding: 25px;
+    padding: 20px;
     border-radius: 15px;
     margin-bottom: 25px;
     border: 2px solid #e9ecef;
@@ -157,32 +163,34 @@ input:focus, select:focus, textarea:focus {
 
 .items-section h3 {
     color: #333;
-    margin-bottom: 20px;
-    font-size: 1.3em;
+    margin-bottom: 15px;
+    font-size: 1.2em;
 }
 
 .add-item-form {
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     border: 1px solid #dee2e6;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .btn-add {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    width: 100%;
+    margin-top: 10px;
 }
 
 .item-row {
     background: white;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
     border: 1px solid #dee2e6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .item-info {
@@ -190,32 +198,33 @@ input:focus, select:focus, textarea:focus {
 }
 
 .item-info h4 {
-    margin: 0 0 5px 0;
+    margin: 0 0 3px 0;
     color: #333;
-    font-size: 1.1em;
+    font-size: 1em;
 }
 
 .item-info p {
     margin: 0;
     color: #666;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .item-price {
     font-weight: 600;
     color: #28a745;
-    font-size: 1.1em;
-    margin-right: 15px;
+    font-size: 1em;
+    margin-right: 10px;
 }
 
 .remove-item {
     background: #dc3545;
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
+    min-width: 30px;
 }
 
 .remove-item:hover {
@@ -225,27 +234,31 @@ input:focus, select:focus, textarea:focus {
 .total-section {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 15px;
     text-align: center;
     margin-bottom: 25px;
 }
 
 .total-display h3 {
-    margin: 0 0 10px 0;
-    font-size: 2em;
+    margin: 0 0 8px 0;
+    font-size: 1.8em;
 }
 
 .total-display p {
     margin: 0;
     opacity: 0.9;
+    font-size: 1em;
 }
 
 .empty-items {
     text-align: center;
-    padding: 40px 20px;
+    padding: 30px 15px;
     color: #666;
     font-style: italic;
+    background: white;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
 }
 
 /* Contenedor para los botones de acción */
@@ -285,6 +298,11 @@ input:focus, select:focus, textarea:focus {
         grid-template-columns: 1fr;
     }
     
+    .form-row-mobile {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
     .container {
         margin: 10px;
     }
@@ -306,10 +324,28 @@ input:focus, select:focus, textarea:focus {
     .item-row {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 8px;
+        padding: 10px;
     }
     
     .item-price {
         margin-right: 0;
+        align-self: flex-end;
+    }
+    
+    .items-section {
+        padding: 15px;
+    }
+    
+    .add-item-form {
+        padding: 12px;
+    }
+    
+    .total-section {
+        padding: 15px;
+    }
+    
+    .total-display h3 {
+        font-size: 1.5em;
     }
 }

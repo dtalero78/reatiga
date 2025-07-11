@@ -17,6 +17,19 @@ function init() {
     displaySalesHistory();
     displayCurrentItems();
     updateTotal();
+    setupEventListeners();
+}
+
+// Configurar event listeners
+function setupEventListeners() {
+    // Botón de agregar item
+    document.getElementById('addItemBtn').addEventListener('click', addItem);
+    // Event listener para Enter en los campos
+    ['newItem', 'newQuantity', 'newPrice'].forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addItem();
+        });
+    });
 }
 
 // Agregar item a la venta
@@ -24,31 +37,29 @@ function addItem() {
     const itemSelect = document.getElementById('newItem');
     const quantityInput = document.getElementById('newQuantity');
     const priceInput = document.getElementById('newPrice');
-    
+
     const item = itemSelect.value;
     const quantity = parseInt(quantityInput.value) || 1;
     const price = parseFloat(priceInput.value) || 0;
-    
+
     if (!item) {
         alert('Por favor selecciona un item');
         return;
     }
-    
+
     if (price <= 0) {
         alert('Por favor ingresa un precio válido');
         return;
     }
-    
+
     // Verificar si el item ya existe
     const existingItemIndex = currentItems.findIndex(i => i.item === item);
-    
+
     if (existingItemIndex >= 0) {
-        // Si existe, actualizar cantidad y precio
         currentItems[existingItemIndex].quantity += quantity;
-        currentItems[existingItemIndex].price = price; // Usar el precio más reciente
+        currentItems[existingItemIndex].price = price;
         currentItems[existingItemIndex].subtotal = currentItems[existingItemIndex].quantity * price;
     } else {
-        // Si no existe, agregar nuevo item
         currentItems.push({
             item: item,
             quantity: quantity,
@@ -56,13 +67,12 @@ function addItem() {
             subtotal: quantity * price
         });
     }
-    
+
     // Limpiar formulario de agregar item
     itemSelect.value = '';
     quantityInput.value = '';
     priceInput.value = '';
-    
-    // Actualizar display
+
     displayCurrentItems();
     updateTotal();
 }
@@ -70,12 +80,11 @@ function addItem() {
 // Mostrar items actuales
 function displayCurrentItems() {
     const container = document.getElementById('itemsContainer');
-    
     if (currentItems.length === 0) {
         container.innerHTML = '<div class="empty-items">No hay items agregados aún</div>';
         return;
     }
-    
+
     container.innerHTML = currentItems.map((item, index) => `
         <div class="item-row">
             <div class="item-info">
@@ -99,7 +108,7 @@ function removeItem(index) {
 function updateTotal() {
     const total = currentItems.reduce((sum, item) => sum + item.subtotal, 0);
     const totalItems = currentItems.reduce((sum, item) => sum + item.quantity, 0);
-    
+
     document.getElementById('totalAmount').textContent = total.toLocaleString('es-CO');
     document.getElementById('totalItems').textContent = totalItems;
 }
@@ -107,25 +116,22 @@ function updateTotal() {
 // Manejar el envío del formulario
 document.getElementById('salesForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
-    // Validar que haya items
+
     if (currentItems.length === 0) {
         alert('Por favor agrega al menos un item a la venta');
         return;
     }
-    
-    // Validar medio de pago
     if (!document.getElementById('paymentMethod').value) {
         alert('Por favor selecciona un medio de pago');
         return;
     }
-    
+
     const formData = {
         id: saleCounter++,
         fecha: new Date().toLocaleDateString('es-CO'),
         hora: new Date().toLocaleTimeString('es-CO'),
         medioPago: document.getElementById('paymentMethod').value,
-        items: [...currentItems], // Copia de los items
+        items: [...currentItems],
         totalItems: currentItems.reduce((sum, item) => sum + item.quantity, 0),
         valorTotal: currentItems.reduce((sum, item) => sum + item.subtotal, 0),
         nombreCliente: document.getElementById('customerName').value || 'No especificado',
@@ -133,22 +139,17 @@ document.getElementById('salesForm').addEventListener('submit', function(e) {
         telefono: document.getElementById('customerPhone').value || 'No especificado'
     };
 
-    // Guardar en localStorage
     salesData.unshift(formData);
     localStorage.setItem('salesData', JSON.stringify(salesData));
     localStorage.setItem('saleCounter', saleCounter.toString());
 
-    // Mostrar mensaje de éxito
     const successMessage = document.getElementById('successMessage');
     successMessage.style.display = 'block';
     setTimeout(() => {
         successMessage.style.display = 'none';
     }, 3000);
 
-    // Limpiar formulario
     clearForm();
-    
-    // Actualizar historial
     displaySalesHistory();
 });
 
@@ -159,12 +160,15 @@ function clearForm() {
     displayCurrentItems();
     updateTotal();
     document.getElementById('paymentMethod').focus();
+    document.getElementById('newItem').value = '';
+    document.getElementById('newQuantity').value = '1';
+    document.getElementById('newPrice').value = '';
 }
 
 // Mostrar historial de ventas
 function displaySalesHistory() {
     const historyContainer = document.getElementById('salesHistory');
-    const recentSales = salesData.slice(0, 10); // Mostrar últimas 10 ventas
+    const recentSales = salesData.slice(0, 10);
 
     if (recentSales.length === 0) {
         historyContainer.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">No hay ventas registradas aún.</p>';
@@ -193,7 +197,7 @@ function displaySalesHistory() {
     historyContainer.innerHTML = historyHTML;
 }
 
-// Función para exportar datos (bonus)
+// Exportar datos
 function exportData() {
     const dataStr = JSON.stringify(salesData, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -204,18 +208,18 @@ function exportData() {
     link.click();
 }
 
-// Función para calcular total de ventas del día
+// Calcular total de ventas del día
 function getTodayTotal() {
     const today = new Date().toLocaleDateString('es-CO');
     const todaySales = salesData.filter(sale => sale.fecha === today);
     return todaySales.reduce((total, sale) => total + sale.valorTotal, 0);
 }
 
-// Función para obtener estadísticas del día
+// Estadísticas del día
 function getDayStats() {
     const today = new Date().toLocaleDateString('es-CO');
     const todaySales = salesData.filter(sale => sale.fecha === today);
-    
+
     const stats = {
         totalVentas: todaySales.length,
         totalIngresos: todaySales.reduce((total, sale) => total + sale.valorTotal, 0),
@@ -223,92 +227,59 @@ function getDayStats() {
         itemMasVendido: getMostSoldItem(todaySales),
         medioPagoMasUsado: getMostUsedPaymentMethod(todaySales)
     };
-    
+
     return stats;
 }
 
-// Función auxiliar para obtener el item más vendido
 function getMostSoldItem(sales) {
     if (sales.length === 0) return 'N/A';
-    
+
     const itemCount = {};
     sales.forEach(sale => {
         sale.items.forEach(item => {
             itemCount[item.item] = (itemCount[item.item] || 0) + item.quantity;
         });
     });
-    
+
     if (Object.keys(itemCount).length === 0) return 'N/A';
-    
+
     return Object.keys(itemCount).reduce((a, b) => itemCount[a] > itemCount[b] ? a : b);
 }
 
-// Función auxiliar para obtener el medio de pago más usado
 function getMostUsedPaymentMethod(sales) {
     if (sales.length === 0) return 'N/A';
-    
+
     const paymentCount = {};
     sales.forEach(sale => {
         paymentCount[sale.medioPago] = (paymentCount[sale.medioPago] || 0) + 1;
     });
-    
+
     return Object.keys(paymentCount).reduce((a, b) => paymentCount[a] > paymentCount[b] ? a : b);
 }
 
-// Función para mostrar estadísticas en consola (para debugging)
 function showStats() {
     const stats = getDayStats();
     console.log('Estadísticas del día:', stats);
 }
 
-// Inicializar la aplicación cuando se carga la página
 window.addEventListener('load', init);
 
-// Función para limpiar todos los datos (usar con cuidado)
+// Limpiar todos los datos
 function clearAllData() {
     if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
         localStorage.removeItem('salesData');
         localStorage.removeItem('saleCounter');
         salesData = [];
         saleCounter = 1;
+        currentItems = [];
         displaySalesHistory();
+        displayCurrentItems();
+        updateTotal();
         alert('Todos los datos han sido eliminados.');
     }
 }
 
-// Función para importar datos desde archivo JSON
-function importData(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                if (Array.isArray(importedData)) {
-                    salesData = importedData;
-                    localStorage.setItem('salesData', JSON.stringify(salesData));
-                    displaySalesHistory();
-                    alert('Datos importados exitosamente.');
-                } else {
-                    alert('El archivo no tiene el formato correcto.');
-                }
-            } catch (error) {
-                alert('Error al leer el archivo: ' + error.message);
-            }
-        };
-        reader.readAsText(file);
-    }
-} los datos? Esta acción no se puede deshacer.')) {
-        localStorage.removeItem('salesData');
-        localStorage.removeItem('saleCounter');
-        salesData = [];
-        saleCounter = 1;
-        displaySalesHistory();
-        alert('Todos los datos han sido eliminados.');
-    }
-}
-
-// Función para importar datos desde archivo JSON
+// Importar datos desde archivo JSON
 function importData(event) {
     const file = event.target.files[0];
     if (file) {
