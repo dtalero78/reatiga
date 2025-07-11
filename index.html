@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ventas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Registro de Ventas</h1>
+            <p>Sistema de gestión de ventas presenciales</p>
+        </div>
+
+        <div class="form-section">
+            <div class="success-message" id="successMessage">
+                ✅ Venta registrada exitosamente
+            </div>
+
+            <form id="salesForm">
+                <div class="form-group">
+                    <label>Fecha y Hora Actual:</label>
+                    <div class="datetime-display" id="currentDateTime"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="paymentMethod">Medio de Pago <span class="required">*</span></label>
+                        <select id="paymentMethod" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="nequi">Nequi</option>
+                            <option value="daviplata">Daviplata</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item">Item <span class="required">*</span></label>
+                        <select id="item" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Libro MC">Libro MC</option>
+                            <option value="Libro DV">Libro DV</option>
+                            <option value="Siembra Árbol">Siembra Árbol</option>
+                            <option value="Juguete">Juguete</option>
+                            <option value="Joya">Joya</option>
+                            <option value="Combo libros">Combo libros</option>
+                            <option value="Kimono">Kimono</option>
+                            <option value="Kit manualidad">Kit manualidad</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">Cantidad <span class="required">*</span></label>
+                        <input type="number" id="quantity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Valor Pagado <span class="required">*</span></label>
+                        <input type="number" id="amount" min="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerName">Nombre del Cliente</label>
+                        <input type="text" id="customerName">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="customerID">Cédula</label>
+                        <input type="text" id="customerID">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customerPhone">Teléfono</label>
+                    <input type="tel" id="customerPhone">
+                </div>
+
+                <div class="form-group">
+                    <div class="action-buttons">
+                        <button type="submit" class="btn">💾 Registrar Venta</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">🔄 Limpiar Formulario</button>
+                        <a href="reports.html" class="btn-link">📊 Ver Reportes</a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="sales-list">
+                <h2>📋 Últimas Ventas Registradas</h2>
+                <div id="salesHistory"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
