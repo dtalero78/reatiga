@@ -24,24 +24,9 @@
                     <div class="datetime-display" id="currentDateTime"></div>
                 </div>
 
-                <div class="form-group">
-                    <label for="paymentMethod">Medio de Pago <span class="required">*</span></label>
-                    <select id="paymentMethod" required>
-                        <option value="">Seleccionar...</option>
-                        <option value="efectivo">Efectivo</option>
-                        <option value="tarjeta">Tarjeta</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="nequi">Nequi</option>
-                        <option value="daviplata">Daviplata</option>
-                    </select>
-                </div>
-
-                <!-- Sección de Items -->
+                <!-- Sección de Items - Ahora va después de fecha/hora -->
                 <div class="items-section">
                     <h3>🛍️ Items de la Venta</h3>
-                    <div id="itemsContainer">
-                        <!-- Los items se agregarán dinámicamente aquí -->
-                    </div>
                     
                     <div class="add-item-form">
                         <div class="form-group">
@@ -75,6 +60,10 @@
                             <button type="button" class="btn btn-add" id="addItemBtn">➕ Agregar Item</button>
                         </div>
                     </div>
+
+                    <div id="itemsContainer">
+                        <!-- Los items se agregarán dinámicamente aquí -->
+                    </div>
                 </div>
 
                 <!-- Total de la venta -->
@@ -83,6 +72,19 @@
                         <h3>Total: $<span id="totalAmount">0</span></h3>
                         <p><span id="totalItems">0</span> items</p>
                     </div>
+                </div>
+
+                <!-- Medio de pago - Ahora va después del total -->
+                <div class="form-group">
+                    <label for="paymentMethod">Medio de Pago <span class="required">*</span></label>
+                    <select id="paymentMethod" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="nequi">Nequi</option>
+                        <option value="daviplata">Daviplata</option>
+                    </select>
                 </div>
 
                 <div class="form-row">
