@@ -146,6 +146,154 @@ input:focus, select:focus, textarea:focus {
     color: #495057;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-weight: 300;
+}
+
+.header p {
+    opacity: 0.9;
+    font-size: 1.1em;
+}
+
+.form-section {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #4facfe;
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+    display: none;
+}
+
+.sales-list {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.sales-item {
+    background: #f8f9fa;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #4facfe;
+}
+
+.sales-item h3 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.sales-item p {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.datetime-display {
+    background: #e9ecef;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #495057;
+}
+
 .form-row-mobile {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -294,8 +442,53 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding: 5px;
+        background: white;
+    }
+    
+    .container {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+    }
+    
+    .header {
+        padding: 15px;
+        border-radius: 0;
+    }
+    
+    .header h1 {
+        font-size: 1.8em;
+        margin-bottom: 5px;
+    }
+    
+    .header p {
+        font-size: 0.9em;
+    }
+    
+    .form-section {
+        padding: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        font-size: 1em;
+        margin-bottom: 5px;
+    }
+    
+    input, select, textarea {
+        padding: 12px;
+        font-size: 16px;
+    }
+    
     .form-row {
         grid-template-columns: 1fr;
+        gap: 15px;
     }
     
     .form-row-mobile {
@@ -303,21 +496,18 @@ input:focus, select:focus, textarea:focus {
         gap: 10px;
     }
     
-    .container {
-        margin: 10px;
+    .items-section {
+        padding: 12px;
+        margin-bottom: 15px;
     }
     
-    .header h1 {
-        font-size: 2em;
+    .items-section h3 {
+        font-size: 1.1em;
+        margin-bottom: 10px;
     }
     
-    .action-buttons {
-        flex-direction: column;
-    }
-    
-    .btn, .btn-link {
-        width: 100%;
-        margin-right: 0;
+    .add-item-form {
+        padding: 10px;
         margin-bottom: 10px;
     }
     
@@ -333,19 +523,54 @@ input:focus, select:focus, textarea:focus {
         align-self: flex-end;
     }
     
-    .items-section {
-        padding: 15px;
-    }
-    
-    .add-item-form {
-        padding: 12px;
-    }
-    
     .total-section {
         padding: 15px;
+        margin-bottom: 15px;
     }
     
     .total-display h3 {
         font-size: 1.5em;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn, .btn-link {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 0;
+        padding: 12px 15px;
+        font-size: 1em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+    
+    .btn-add {
+        margin-top: 8px;
+        padding: 12px;
+        font-size: 0.95em;
+    }
+    
+    .sales-list {
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+    
+    .sales-item {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .datetime-display {
+        padding: 8px;
+        font-size: 0.8em;
+    }
+    
+    .empty-items {
+        padding: 20px 10px;
+        font-size: 0.9em;
     }
 }
