@@ -484,3 +484,247 @@
                 </select>
 
                 <button class="btn btn-success" onclick="exportToCSV    
+
+()">📊 Exportar CSV</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpiar Datos</button>
+            </div>
+
+            <!-- Tabla de ventas -->
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable('id')">ID <span class="sort-indicator" id="sort-id"></span></th>
+                            <th onclick="sortTable('fecha')">Fecha <span class="sort-indicator" id="sort-fecha"></span></th>
+                            <th onclick="sortTable('nombreCliente')">Cliente <span class="sort-indicator" id="sort-nombreCliente"></span></th>
+                            <th>Items</th>
+                            <th onclick="sortTable('valorTotal')">Total <span class="sort-indicator" id="sort-valorTotal"></span></th>
+                            <th onclick="sortTable('medioPago')">Medio de Pago <span class="sort-indicator" id="sort-medioPago"></span></th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody">
+                        <!-- Las filas se generarán dinámicamente -->
+                    </tbody>
+                </table>
+                
+                <div class="no-data" style="display: none;">
+                    <h3>📭 No hay ventas que mostrar</h3>
+                    <p>No se encontraron ventas con los filtros aplicados</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables para reportes
+        let allSalesData = [];
+        let filteredSalesData = [];
+        let currentSort = { field: 'id', direction: 'desc' };
+
+        // Función para exportar a CSV
+        function exportToCSV() {
+            if (filteredSalesData.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            let csvContent = "ID,Fecha,Hora,Cliente,Cedula,Telefono,Items,Total Items,Valor Total,Medio de Pago\n";
+            
+            filteredSalesData.forEach(sale => {
+                const itemsStr = sale.items.map(item => `${item.item}(${item.quantity})`).join('; ');
+                const row = [
+                    sale.id,
+                    sale.fecha,
+                    sale.hora,
+                    sale.nombreCliente,
+                    sale.cedula,
+                    sale.telefono,
+                    `"${itemsStr}"`,
+                    sale.totalItems,
+                    sale.valorTotal,
+                    sale.medioPago
+                ].join(',');
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `ventas_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Función para ordenar tabla
+        function sortTable(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+
+            filteredSalesData.sort((a, b) => {
+                let valueA = a[field];
+                let valueB = b[field];
+
+                if (field === 'valorTotal' || field === 'id') {
+                    valueA = Number(valueA);
+                    valueB = Number(valueB);
+                }
+
+                if (valueA < valueB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valueA > valueB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            updateSortIndicators();
+            populateReportsTable(filteredSalesData);
+        }
+
+        // Actualizar indicadores de ordenamiento
+        function updateSortIndicators() {
+            document.querySelectorAll('.sort-indicator').forEach(indicator => {
+                indicator.textContent = '';
+            });
+
+            const indicator = document.getElementById(`sort-${currentSort.field}`);
+            if (indicator) {
+                indicator.textContent = currentSort.direction === 'asc' ? '↑' : '↓';
+            }
+        }
+
+        // Función para aplicar filtros
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            const itemFilter = document.getElementById('itemFilter').value;
+            const paymentFilter = document.getElementById('paymentFilter').value;
+
+            filteredSalesData = allSalesData.filter(sale => {
+                // Filtro de búsqueda
+                const searchMatch = !searchTerm || 
+                    sale.nombreCliente.toLowerCase().includes(searchTerm) ||
+                    sale.cedula.toLowerCase().includes(searchTerm) ||
+                    sale.telefono.toLowerCase().includes(searchTerm) ||
+                    sale.id.toString().includes(searchTerm) ||
+                    sale.items.some(item => item.item.toLowerCase().includes(searchTerm));
+
+                // Filtro de fecha
+                let dateMatch = true;
+                if (dateFilter) {
+                    const saleDate = new Date(sale.fecha.split('/').reverse().join('-'));
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+
+                    switch (dateFilter) {
+                        case 'today':
+                            dateMatch = sale.fecha === today.toLocaleDateString('es-CO');
+                            break;
+                        case 'yesterday':
+                            dateMatch = sale.fecha === yesterday.toLocaleDateString('es-CO');
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(today);
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            dateMatch = saleDate >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(today);
+                            monthAgo.setMonth(monthAgo.getMonth() - 1);
+                            dateMatch = saleDate >= monthAgo;
+                            break;
+                    }
+                }
+
+                // Filtro de item
+                const itemMatch = !itemFilter || sale.items.some(item => item.item === itemFilter);
+
+                // Filtro de medio de pago
+                const paymentMatch = !paymentFilter || sale.medioPago === paymentFilter;
+
+                return searchMatch && dateMatch && itemMatch && paymentMatch;
+            });
+
+            populateReportsTable(filteredSalesData);
+            updateStats();
+        }
+
+        // Actualizar estadísticas según filtros
+        function updateStats() {
+            const totalSales = filteredSalesData.length;
+            const totalRevenue = filteredSalesData.reduce((sum, sale) => sum + sale.valorTotal, 0);
+            const averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;
+            
+            const today = new Date().toLocaleDateString('es-CO');
+            const todaySales = filteredSalesData.filter(sale => sale.fecha === today).length;
+
+            document.getElementById('totalSales').textContent = totalSales;
+            document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toLocaleString('es-CO');
+            document.getElementById('averageSale').textContent = '$' + Math.round(averageSale).toLocaleString('es-CO');
+            document.getElementById('todaySales').textContent = todaySales;
+        }
+
+        // Llenar filtro de items
+        function populateItemFilter() {
+            const itemFilter = document.getElementById('itemFilter');
+            const items = new Set();
+            
+            allSalesData.forEach(sale => {
+                sale.items.forEach(item => {
+                    items.add(item.item);
+                });
+            });
+
+            // Limpiar opciones existentes (excepto la primera)
+            while (itemFilter.children.length > 1) {
+                itemFilter.removeChild(itemFilter.lastChild);
+            }
+
+            // Agregar opciones de items
+            Array.from(items).sort().forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                itemFilter.appendChild(option);
+            });
+        }
+
+        // Configurar event listeners para filtros
+        function setupFilterListeners() {
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('dateFilter').addEventListener('change', applyFilters);
+            document.getElementById('itemFilter').addEventListener('change', applyFilters);
+            document.getElementById('paymentFilter').addEventListener('change', applyFilters);
+        }
+
+        // Función mejorada de initReports
+        async function initReports() {
+            if (!document.getElementById('totalSales')) return;
+
+            try {
+                allSalesData = await fetchSales();
+                filteredSalesData = [...allSalesData];
+                
+                populateItemFilter();
+                setupFilterListeners();
+                updateStats();
+                populateReportsTable(filteredSalesData);
+                updateSortIndicators();
+
+            } catch (e) {
+                console.error('Error al cargar reportes:', e);
+                document.querySelector('.no-data').style.display = 'block';
+            }
+        }
+
+        // Inicializar cuando se carga el DOM
+        document.addEventListener('DOMContentLoaded', initReports);
+    </script>
+</body>
+</html>
