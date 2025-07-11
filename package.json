@@ -5,14 +5,16 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "init-db": "node -e \"const sqlite3 = require('sqlite3').verbose(); const db = new sqlite3.Database('./sales.db'); console.log('Base de datos inicializada'); db.close();\""
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
   },
   "author": "dtalero78",
   "license": "MIT",
-  "keywords": ["sales", "registration", "express"],
+  "keywords": ["sales", "registration", "express", "sqlite"],
   "engines": {
     "node": ">=18.0.0"
   }

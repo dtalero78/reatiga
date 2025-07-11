@@ -1,7 +1,54 @@
 // Variables globales
-let salesData = JSON.parse(localStorage.getItem('salesData')) || [];
-let saleCounter = parseInt(localStorage.getItem('saleCounter')) || 1;
+let salesData = [];
 let currentItems = []; // Array para almacenar los items de la venta actual
+
+// Funciones de API
+async function fetchSales() {
+    try {
+        const response = await fetch('/api/ventas');
+        if (!response.ok) throw new Error('Error al obtener ventas');
+        salesData = await response.json();
+        return salesData;
+    } catch (error) {
+        console.error('Error al cargar ventas:', error);
+        // Fallback a localStorage en caso de error
+        salesData = JSON.parse(localStorage.getItem('salesData')) || [];
+        return salesData;
+    }
+}
+
+async function saveSale(saleData) {
+    try {
+        const response = await fetch('/api/ventas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(saleData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al guardar la venta');
+        }
+        
+        const savedSale = await response.json();
+        return savedSale;
+    } catch (error) {
+        console.error('Error al guardar venta:', error);
+        
+        // Fallback a localStorage
+        const fallbackSale = {
+            ...saleData,
+            id: Date.now() // ID temporal
+        };
+        
+        let localSales = JSON.parse(localStorage.getItem('salesData')) || [];
+        localSales.unshift(fallbackSale);
+        localStorage.setItem('salesData', JSON.stringify(localSales));
+        
+        throw error;
+    }
+}
 
 // Actualizar fecha y hora cada segundo
 function updateDateTime() {
@@ -11,9 +58,13 @@ function updateDateTime() {
 }
 
 // Inicializar la aplicación
-function init() {
+async function init() {
     updateDateTime();
     setInterval(updateDateTime, 1000);
+    
+    // Cargar ventas desde el servidor
+    await fetchSales();
+    
     displaySalesHistory();
     displayCurrentItems();
     updateTotal();
@@ -89,9 +140,9 @@ function displayCurrentItems() {
         <div class="item-row">
             <div class="item-info">
                 <h4>${item.item}</h4>
-                <p>Cantidad: ${item.quantity} | Precio unitario: ${item.price.toLocaleString('es-CO')}</p>
+                <p>Cantidad: ${item.quantity} | Precio unitario: $${item.price.toLocaleString('es-CO')}</p>
             </div>
-            <div class="item-price">${item.subtotal.toLocaleString('es-CO')}</div>
+            <div class="item-price">$${item.subtotal.toLocaleString('es-CO')}</div>
             <button class="remove-item" onclick="removeItem(${index})">🗑️</button>
         </div>
     `).join('');
@@ -114,7 +165,7 @@ function updateTotal() {
 }
 
 // Manejar el envío del formulario
-document.getElementById('salesForm').addEventListener('submit', function(e) {
+document.getElementById('salesForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     if (currentItems.length === 0) {
@@ -127,7 +178,6 @@ document.getElementById('salesForm').addEventListener('submit', function(e) {
     }
 
     const formData = {
-        id: saleCounter++,
         fecha: new Date().toLocaleDateString('es-CO'),
         hora: new Date().toLocaleTimeString('es-CO'),
         medioPago: document.getElementById('paymentMethod').value,
@@ -139,18 +189,51 @@ document.getElementById('salesForm').addEventListener('submit', function(e) {
         telefono: document.getElementById('customerPhone').value || 'No especificado'
     };
 
-    salesData.unshift(formData);
-    localStorage.setItem('salesData', JSON.stringify(salesData));
-    localStorage.setItem('saleCounter', saleCounter.toString());
+    try {
+        // Mostrar loading
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '💾 Guardando...';
+        submitBtn.disabled = true;
 
-    const successMessage = document.getElementById('successMessage');
-    successMessage.style.display = 'block';
-    setTimeout(() => {
-        successMessage.style.display = 'none';
-    }, 3000);
+        const savedSale = await saveSale(formData);
+        
+        // Actualizar la lista local
+        salesData.unshift(savedSale);
 
-    clearForm();
-    displaySalesHistory();
+        const successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 3000);
+
+        clearForm();
+        displaySalesHistory();
+
+        // Restaurar botón
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+
+    } catch (error) {
+        alert('Error al guardar la venta. Se guardó localmente como respaldo.');
+        
+        // Restaurar botón
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.textContent = '💾 Registrar Venta';
+        submitBtn.disabled = false;
+        
+        // Mostrar mensaje de éxito local
+        const successMessage = document.getElementById('successMessage');
+        successMessage.style.display = 'block';
+        successMessage.textContent = '⚠️ Venta guardada localmente (sin conexión)';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+            successMessage.textContent = '✅ Venta registrada exitosamente';
+        }, 3000);
+
+        clearForm();
+        displaySalesHistory();
+    }
 });
 
 // Limpiar formulario
@@ -179,13 +262,13 @@ function displaySalesHistory() {
         <div class="sales-item">
             <h3>Venta #${sale.id} - ${sale.totalItems} items</h3>
             <p><strong>Fecha:</strong> ${sale.fecha} a las ${sale.hora}</p>
-            <p><strong>Total:</strong> ${sale.valorTotal.toLocaleString('es-CO')} | <strong>Medio de Pago:</strong> ${sale.medioPago}</p>
+            <p><strong>Total:</strong> $${sale.valorTotal.toLocaleString('es-CO')} | <strong>Medio de Pago:</strong> ${sale.medioPago}</p>
             <p><strong>Cliente:</strong> ${sale.nombreCliente}</p>
             <div style="margin-top: 10px;">
                 <strong>Items:</strong>
                 <ul style="margin: 5px 0 0 20px;">
                     ${sale.items.map(item => `
-                        <li>${item.item} - Cantidad: ${item.quantity} - ${item.subtotal.toLocaleString('es-CO')}</li>
+                        <li>${item.item} - Cantidad: ${item.quantity} - $${item.subtotal.toLocaleString('es-CO')}</li>
                     `).join('')}
                 </ul>
             </div>
@@ -262,20 +345,36 @@ function showStats() {
     console.log('Estadísticas del día:', stats);
 }
 
+// Inicializar cuando se carga la página
 window.addEventListener('load', init);
 
 // Limpiar todos los datos
-function clearAllData() {
+async function clearAllData() {
     if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
+        try {
+            // Intentar eliminar del servidor si es posible
+            const response = await fetch('/api/ventas', { method: 'DELETE' });
+            if (response.ok) {
+                salesData = [];
+                currentItems = [];
+                displaySalesHistory();
+                displayCurrentItems();
+                updateTotal();
+                alert('Todos los datos han sido eliminados del servidor.');
+            }
+        } catch (error) {
+            console.error('Error al eliminar datos del servidor:', error);
+        }
+        
+        // Eliminar datos locales también
         localStorage.removeItem('salesData');
         localStorage.removeItem('saleCounter');
         salesData = [];
-        saleCounter = 1;
         currentItems = [];
         displaySalesHistory();
         displayCurrentItems();
         updateTotal();
-        alert('Todos los datos han sido eliminados.');
+        alert('Datos locales eliminados.');
     }
 }
 
@@ -301,4 +400,22 @@ function importData(event) {
         };
         reader.readAsText(file);
     }
+}
+
+// Sincronizar datos locales con servidor (función auxiliar)
+async function syncLocalDataToServer() {
+    const localData = JSON.parse(localStorage.getItem('salesData')) || [];
+    
+    for (const sale of localData) {
+        try {
+            if (!sale.synced) {
+                await saveSale(sale);
+                sale.synced = true;
+            }
+        } catch (error) {
+            console.error('Error sincronizando venta:', error);
+        }
+    }
+    
+    localStorage.setItem('salesData', JSON.stringify(localData));
 }
